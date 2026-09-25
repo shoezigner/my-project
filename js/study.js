@@ -56,6 +56,15 @@
     saveAll(all);
   }
 
+  function deleteItems(categoryId, itemIds) {
+    var all = loadAll();
+    if (!all[categoryId]) return;
+    var idSet = {};
+    itemIds.forEach(function (id) { idSet[id] = true; });
+    all[categoryId] = all[categoryId].filter(function (it) { return !idSet[it.id]; });
+    saveAll(all);
+  }
+
   // 연습 화면에 표시할 "질문/제목" 텍스트
   function getPrompt(item) {
     if (item.type === "theory") return item.title || "";
@@ -74,6 +83,7 @@
     getItems: getItems,
     addItem: addItem,
     deleteItem: deleteItem,
+    deleteItems: deleteItems,
     getPrompt: getPrompt,
     getPracticeText: getPracticeText
   };

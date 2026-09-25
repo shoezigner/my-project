@@ -285,6 +285,21 @@
       el.manageBulkText.value = "";
       renderManageList();
     });
+
+    $("btn-manage-bulk-delete").addEventListener("click", function () {
+      var cat = el.manageCategory.value, type = el.manageType.value;
+      var items = StudySets.getItems(cat).filter(function (it) { return it.type === type; });
+      if (!items.length) {
+        el.manageBulkResult.textContent = "삭제할 항목이 없습니다.";
+        return;
+      }
+      var catLabel = StudySets.CATEGORIES.filter(function (c) { return c.id === cat; })[0].label;
+      var typeLabel = StudySets.TYPES.filter(function (t) { return t.id === type; })[0].label;
+      if (!confirm("[" + catLabel + " / " + typeLabel + "] 목록의 " + items.length + "개 항목을 전부 삭제할까요? 되돌릴 수 없습니다.")) return;
+      StudySets.deleteItems(cat, items.map(function (it) { return it.id; }));
+      el.manageBulkResult.textContent = items.length + "개 항목이 삭제되었습니다.";
+      renderManageList();
+    });
   }
 
   // ---------- 세션 엔진 ----------

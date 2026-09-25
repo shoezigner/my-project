@@ -116,7 +116,10 @@ A: 습식, 건식, 준비작동식, 일제살수식, 부압식
         <div class="field-row">
           <textarea id="manage-bulk-text" rows="10" placeholder="여기에 여러 문제를 한 번에 붙여넣으세요"></textarea>
         </div>
-        <button class="primary-btn" id="btn-manage-bulk-add">일괄 추가하기</button>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="primary-btn" id="btn-manage-bulk-add">일괄 추가하기</button>
+          <button class="secondary-btn" id="btn-manage-bulk-delete" style="border-color:var(--bad); color:var(--bad);">일괄삭제</button>
+        </div>
         <p id="manage-bulk-result" class="muted"></p>
       </div>
 
