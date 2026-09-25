@@ -54,6 +54,11 @@
     el.manageTitle = $("manage-title");
     el.manageContent = $("manage-content");
     el.manageItemList = $("manage-item-list");
+    el.manageModeTabs = $("manage-mode-tabs");
+    el.manageModeSingle = $("manage-mode-single");
+    el.manageModeBulk = $("manage-mode-bulk");
+    el.manageBulkText = $("manage-bulk-text");
+    el.manageBulkResult = $("manage-bulk-result");
     el.promptBox = $("prompt-box");
     el.targetDisplay = $("target-display");
     el.typingInput = $("typing-input");
@@ -145,6 +150,12 @@
     el.manageType.value = el.studyType.value;
     toggleManageFields();
     renderManageList();
+    el.manageModeTabs.querySelectorAll("button").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-manage-mode") === "single");
+    });
+    el.manageModeSingle.classList.remove("hidden");
+    el.manageModeBulk.classList.add("hidden");
+    el.manageBulkResult.textContent = "";
     showScreen("screen-study-manage");
   }
   function toggleManageFields() {
@@ -185,6 +196,50 @@
     });
   }
 
+  function buildItemFromQA(type, qText, aText) {
+    if (type === "theory") return { type: type, title: qText, content: aText };
+    return { type: type, q: qText, a: aText };
+  }
+
+  // "Q: ..." / "A: ..." 블록 형식과, 탭으로 구분된 "문제\t정답" 한 줄 형식을 모두 지원.
+  function parseBulkText(text) {
+    var lines = text.replace(/\r\n/g, "\n").split("\n");
+    var hasQaMarkers = lines.some(function (l) { return /^(Q|문제|질문|제목)\s*[:：]/i.test(l.trim()); });
+    var pairs = [];
+
+    if (hasQaMarkers) {
+      var cur = null;
+      lines.forEach(function (raw) {
+        var line = raw.trim();
+        var qMatch = /^(?:Q|문제|질문|제목)\s*[:：]\s*(.*)$/i.exec(line);
+        var aMatch = /^(?:A|정답|답|내용)\s*[:：]\s*(.*)$/i.exec(line);
+        if (qMatch) {
+          if (cur && cur.q.length) pairs.push(cur);
+          cur = { q: [qMatch[1]], a: [], mode: "q" };
+        } else if (aMatch && cur) {
+          cur.mode = "a";
+          cur.a.push(aMatch[1]);
+        } else if (cur) {
+          cur[cur.mode].push(raw);
+        }
+      });
+      if (cur && cur.q.length) pairs.push(cur);
+      return pairs
+        .map(function (p) { return { q: p.q.join("\n").trim(), a: p.a.join("\n").trim() }; })
+        .filter(function (p) { return p.q && p.a; });
+    }
+
+    // 탭(또는 파이프) 구분 한 줄짜리 목록
+    return lines
+      .map(function (l) { return l.trim(); })
+      .filter(function (l) { return l; })
+      .map(function (l) {
+        var parts = l.split(/\t+|\s*\|\s*/);
+        return { q: (parts[0] || "").trim(), a: (parts.slice(1).join(" ") || "").trim() };
+      })
+      .filter(function (p) { return p.q && p.a; });
+  }
+
   function bindStudyManage() {
     el.manageCategory.addEventListener("change", renderManageList);
     el.manageType.addEventListener("change", function () { toggleManageFields(); renderManageList(); });
@@ -203,6 +258,31 @@
         el.manageQ.value = ""; el.manageA.value = "";
       }
       StudySets.addItem(cat, item);
+      renderManageList();
+    });
+
+    el.manageModeTabs.querySelectorAll("button").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        el.manageModeTabs.querySelectorAll("button").forEach(function (b) { b.classList.remove("active"); });
+        btn.classList.add("active");
+        var isBulk = btn.getAttribute("data-manage-mode") === "bulk";
+        el.manageModeSingle.classList.toggle("hidden", isBulk);
+        el.manageModeBulk.classList.toggle("hidden", !isBulk);
+      });
+    });
+
+    $("btn-manage-bulk-add").addEventListener("click", function () {
+      var cat = el.manageCategory.value, type = el.manageType.value;
+      var pairs = parseBulkText(el.manageBulkText.value);
+      if (!pairs.length) {
+        el.manageBulkResult.textContent = "인식된 항목이 없습니다. 형식을 확인해 주세요.";
+        return;
+      }
+      pairs.forEach(function (p) {
+        StudySets.addItem(cat, buildItemFromQA(type, p.q, p.a));
+      });
+      el.manageBulkResult.textContent = "총 " + pairs.length + "개 항목이 추가되었습니다.";
+      el.manageBulkText.value = "";
       renderManageList();
     });
   }

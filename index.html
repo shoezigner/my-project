@@ -84,15 +84,41 @@
         <select id="manage-type"></select>
       </div>
 
-      <div id="manage-fields-qa" class="manage-fields">
-        <div class="field-row"><label>문제</label><textarea id="manage-q" rows="2" placeholder="예: 이산화탄소 소화약제의 주된 소화 원리는?"></textarea></div>
-        <div class="field-row"><label>정답 / 모범답안</label><textarea id="manage-a" rows="3" placeholder="타이핑 연습할 정답 내용을 입력하세요."></textarea></div>
+      <div class="tab-row" id="manage-mode-tabs">
+        <button data-manage-mode="single" class="active">개별 등록</button>
+        <button data-manage-mode="bulk">대량 등록</button>
       </div>
-      <div id="manage-fields-theory" class="manage-fields hidden">
-        <div class="field-row"><label>제목</label><input id="manage-title" type="text" placeholder="예: 스프링클러 설비의 종류"></div>
-        <div class="field-row"><label>내용</label><textarea id="manage-content" rows="4" placeholder="타이핑 연습할 이론 내용을 입력하세요."></textarea></div>
+
+      <div id="manage-mode-single">
+        <div id="manage-fields-qa" class="manage-fields">
+          <div class="field-row"><label>문제</label><textarea id="manage-q" rows="2" placeholder="예: 이산화탄소 소화약제의 주된 소화 원리는?"></textarea></div>
+          <div class="field-row"><label>정답 / 모범답안</label><textarea id="manage-a" rows="3" placeholder="타이핑 연습할 정답 내용을 입력하세요."></textarea></div>
+        </div>
+        <div id="manage-fields-theory" class="manage-fields hidden">
+          <div class="field-row"><label>제목</label><input id="manage-title" type="text" placeholder="예: 스프링클러 설비의 종류"></div>
+          <div class="field-row"><label>내용</label><textarea id="manage-content" rows="4" placeholder="타이핑 연습할 이론 내용을 입력하세요."></textarea></div>
+        </div>
+        <button class="primary-btn" id="btn-manage-add">추가하기</button>
       </div>
-      <button class="primary-btn" id="btn-manage-add">추가하기</button>
+
+      <div id="manage-mode-bulk" class="hidden">
+        <div class="prompt-box">
+          아래처럼 <strong>Q:</strong> 다음 줄에 문제, <strong>A:</strong> 다음 줄에 정답(여러 줄 가능)을 쓰고, 항목 사이는 빈 줄로 구분해서 통째로 붙여넣으세요.<br>
+          (이론 유형도 동일하게 Q: = 제목, A: = 내용 으로 쓰면 됩니다)
+          <pre style="white-space:pre-wrap; margin:8px 0 0; color:var(--muted); font-size:.85rem;">Q: 이산화탄소 소화약제의 주된 소화 원리는?
+A: 질식소화 및 냉각소화
+
+Q: 스프링클러 설비의 종류를 나열하시오.
+A: 습식, 건식, 준비작동식, 일제살수식, 부압식
+
+※ 엑셀에서 복사한 "문제[탭]정답" 한 줄짜리 목록도 그대로 붙여넣으면 자동 인식됩니다.</pre>
+        </div>
+        <div class="field-row">
+          <textarea id="manage-bulk-text" rows="10" placeholder="여기에 여러 문제를 한 번에 붙여넣으세요"></textarea>
+        </div>
+        <button class="primary-btn" id="btn-manage-bulk-add">일괄 추가하기</button>
+        <p id="manage-bulk-result" class="muted"></p>
+      </div>
 
       <h3>등록된 자료</h3>
       <div id="manage-item-list" class="item-list"></div>
