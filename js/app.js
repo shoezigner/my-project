@@ -36,6 +36,9 @@
     bindPractice();
     bindResult();
     bindRanking();
+    el.modalOverlay.addEventListener("click", function (e) {
+      if (e.target === el.modalOverlay) closeModal();
+    });
     showHome();
   }
 
@@ -72,6 +75,42 @@
     el.resultNickname = $("result-nickname");
     el.rankingTabs = $("ranking-tabs");
     el.rankingList = $("ranking-list");
+    el.modalOverlay = $("modal-overlay");
+    el.modalMessage = $("modal-message");
+    el.modalActions = $("modal-actions");
+  }
+
+  // ---------- 커스텀 알림/확인 모달 (브라우저 기본 alert/confirm은
+  // 반복 호출 시 브라우저가 조용히 무시할 수 있어 사용하지 않음) ----------
+  function closeModal() { el.modalOverlay.classList.add("hidden"); }
+
+  function showAlertModal(message, onClose) {
+    el.modalMessage.textContent = message;
+    el.modalActions.innerHTML = "";
+    var okBtn = document.createElement("button");
+    okBtn.className = "primary-btn";
+    okBtn.textContent = "확인";
+    okBtn.addEventListener("click", function () { closeModal(); if (onClose) onClose(); });
+    el.modalActions.appendChild(okBtn);
+    el.modalOverlay.classList.remove("hidden");
+    okBtn.focus();
+  }
+
+  function showConfirmModal(message, confirmLabel, onConfirm) {
+    el.modalMessage.textContent = message;
+    el.modalActions.innerHTML = "";
+    var cancelBtn = document.createElement("button");
+    cancelBtn.className = "secondary-btn";
+    cancelBtn.textContent = "취소";
+    cancelBtn.addEventListener("click", closeModal);
+    var okBtn = document.createElement("button");
+    okBtn.className = "primary-btn";
+    okBtn.textContent = confirmLabel || "확인";
+    okBtn.addEventListener("click", function () { closeModal(); onConfirm(); });
+    el.modalActions.appendChild(cancelBtn);
+    el.modalActions.appendChild(okBtn);
+    el.modalOverlay.classList.remove("hidden");
+    okBtn.focus();
   }
 
   // ---------- 홈 ----------
@@ -136,7 +175,7 @@
     $("btn-study-start").addEventListener("click", function () {
       var cat = el.studyCategory.value, type = el.studyType.value;
       var items = StudySets.getItems(cat).filter(function (it) { return it.type === type; });
-      if (!items.length) { alert("등록된 학습자료가 없습니다. 먼저 자료를 추가해 주세요."); return; }
+      if (!items.length) { showAlertModal("등록된 학습자료가 없습니다. 먼저 자료를 추가해 주세요."); return; }
       startSession("study", { items: items });
     });
     $("btn-study-manage").addEventListener("click", showStudyManage);
@@ -181,10 +220,10 @@
         "<div class='content'><div class='q'>" + escapeHtml(qText || "") + "</div><div class='a'>" + escapeHtml(aText || "") + "</div></div>" +
         "<button>삭제</button>";
       card.querySelector("button").addEventListener("click", function () {
-        if (confirm("이 자료를 삭제할까요?")) {
+        showConfirmModal("이 자료를 삭제할까요?", "삭제", function () {
           StudySets.deleteItem(cat, it.id);
           renderManageList();
-        }
+        });
       });
       el.manageItemList.appendChild(card);
     });
@@ -249,12 +288,12 @@
       if (type === "theory") {
         item.title = el.manageTitle.value.trim();
         item.content = el.manageContent.value.trim();
-        if (!item.title || !item.content) { alert("제목과 내용을 모두 입력해 주세요."); return; }
+        if (!item.title || !item.content) { showAlertModal("제목과 내용을 모두 입력해 주세요."); return; }
         el.manageTitle.value = ""; el.manageContent.value = "";
       } else {
         item.q = el.manageQ.value.trim();
         item.a = el.manageA.value.trim();
-        if (!item.q || !item.a) { alert("문제와 정답을 모두 입력해 주세요."); return; }
+        if (!item.q || !item.a) { showAlertModal("문제와 정답을 모두 입력해 주세요."); return; }
         el.manageQ.value = ""; el.manageA.value = "";
       }
       StudySets.addItem(cat, item);
@@ -295,10 +334,16 @@
       }
       var catLabel = StudySets.CATEGORIES.filter(function (c) { return c.id === cat; })[0].label;
       var typeLabel = StudySets.TYPES.filter(function (t) { return t.id === type; })[0].label;
-      if (!confirm("[" + catLabel + " / " + typeLabel + "] 목록의 " + items.length + "개 항목을 전부 삭제할까요? 되돌릴 수 없습니다.")) return;
-      StudySets.deleteItems(cat, items.map(function (it) { return it.id; }));
-      el.manageBulkResult.textContent = items.length + "개 항목이 삭제되었습니다.";
-      renderManageList();
+      var count = items.length;
+      showConfirmModal(
+        "[" + catLabel + " / " + typeLabel + "] 목록의 " + count + "개 항목을 전부 삭제할까요?\n되돌릴 수 없습니다.",
+        "삭제",
+        function () {
+          StudySets.deleteItems(cat, items.map(function (it) { return it.id; }));
+          el.manageBulkResult.textContent = count + "개 항목이 삭제되었습니다.";
+          renderManageList();
+        }
+      );
     });
   }
 
@@ -331,7 +376,7 @@
   function startSession(mode, opts) {
     opts = opts || {};
     var items = buildItems(mode, opts);
-    if (!items.length) { alert("연습할 내용이 없습니다."); return; }
+    if (!items.length) { showAlertModal("연습할 내용이 없습니다."); return; }
     session = {
       mode: mode,
       opts: opts,
@@ -476,7 +521,10 @@
       finalizeStep(el.typingInput.value, !!e.isComposing);
     });
     $("btn-quit").addEventListener("click", function () {
-      if (confirm("연습을 그만하고 홈으로 갈까요?")) { stopSessionTimer(); showHome(); }
+      showConfirmModal("연습을 그만하고 홈으로 갈까요?", "그만하기", function () {
+        stopSessionTimer();
+        showHome();
+      });
     });
   }
 
@@ -489,8 +537,7 @@
       var name = el.resultNickname.value.trim() || "익명";
       localStorage.setItem("typingNickname", name);
       saveRanking(session.mode, name, session.lastResult);
-      alert("랭킹에 저장되었습니다!");
-      showRankingScreen(session.mode);
+      showAlertModal("랭킹에 저장되었습니다!", function () { showRankingScreen(session.mode); });
     });
   }
 
