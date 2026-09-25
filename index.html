@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한글 타자연습</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <header class="app-header">
+    <h1 onclick="App.showHome()">⌨️ 한글 타자연습</h1>
+  </header>
+
+  <main id="app-main">
+
+    <!-- 홈 화면 -->
+    <section id="screen-home" class="screen">
+      <div class="mode-grid">
+        <button class="mode-card" data-mode="position">
+          <strong>자리연습</strong>
+          <span>손가락 위치부터 차근차근</span>
+        </button>
+        <button class="mode-card" data-mode="word">
+          <strong>낱말연습</strong>
+          <span>단어 단위로 연습</span>
+        </button>
+        <button class="mode-card" data-mode="shortText">
+          <strong>짧은글연습</strong>
+          <span>짧은 문장 연습</span>
+        </button>
+        <button class="mode-card" data-mode="longText">
+          <strong>긴글연습</strong>
+          <span>긴 지문으로 실력 향상</span>
+        </button>
+        <button class="mode-card" data-mode="study">
+          <strong>자격증 학습</strong>
+          <span>내 시험 자료로 암기+타자 연습</span>
+        </button>
+        <button class="mode-card" data-mode="ranking">
+          <strong>랭킹 보기</strong>
+          <span>내 최고 기록 확인</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 자리연습 단계 선택 -->
+    <section id="screen-stage-select" class="screen hidden">
+      <button class="back-btn" onclick="App.showHome()">← 홈으로</button>
+      <h2>자리연습 단계 선택</h2>
+      <div id="stage-list" class="list-grid"></div>
+    </section>
+
+    <!-- 자격증 학습 선택 -->
+    <section id="screen-study-select" class="screen hidden">
+      <button class="back-btn" onclick="App.showHome()">← 홈으로</button>
+      <h2>자격증 학습</h2>
+      <div class="field-row">
+        <label>자격증 종류</label>
+        <select id="study-category"></select>
+      </div>
+      <div class="field-row">
+        <label>문제 유형</label>
+        <select id="study-type"></select>
+      </div>
+      <div id="study-item-count" class="muted"></div>
+      <div class="btn-row">
+        <button class="primary-btn" id="btn-study-start">이 자료로 연습 시작</button>
+        <button class="secondary-btn" id="btn-study-manage">학습자료 관리(추가/삭제)</button>
+      </div>
+    </section>
+
+    <!-- 학습자료 관리 -->
+    <section id="screen-study-manage" class="screen hidden">
+      <button class="back-btn" onclick="App.showStudySelect()">← 뒤로</button>
+      <h2>학습자료 관리</h2>
+      <p class="muted">실제 시험 문제·정답은 정확성을 위해 직접 입력해 주세요.</p>
+      <div class="field-row">
+        <label>자격증 종류</label>
+        <select id="manage-category"></select>
+      </div>
+      <div class="field-row">
+        <label>문제 유형</label>
+        <select id="manage-type"></select>
+      </div>
+
+      <div id="manage-fields-qa" class="manage-fields">
+        <div class="field-row"><label>문제</label><textarea id="manage-q" rows="2" placeholder="예: 이산화탄소 소화약제의 주된 소화 원리는?"></textarea></div>
+        <div class="field-row"><label>정답 / 모범답안</label><textarea id="manage-a" rows="3" placeholder="타이핑 연습할 정답 내용을 입력하세요."></textarea></div>
+      </div>
+      <div id="manage-fields-theory" class="manage-fields hidden">
+        <div class="field-row"><label>제목</label><input id="manage-title" type="text" placeholder="예: 스프링클러 설비의 종류"></div>
+        <div class="field-row"><label>내용</label><textarea id="manage-content" rows="4" placeholder="타이핑 연습할 이론 내용을 입력하세요."></textarea></div>
+      </div>
+      <button class="primary-btn" id="btn-manage-add">추가하기</button>
+
+      <h3>등록된 자료</h3>
+      <div id="manage-item-list" class="item-list"></div>
+    </section>
+
+    <!-- 연습 화면 -->
+    <section id="screen-practice" class="screen hidden">
+      <div class="practice-top">
+        <button class="back-btn" id="btn-quit">← 그만하기</button>
+        <div class="stats">
+          <span id="stat-progress">0/0</span>
+          <span id="stat-time">00:00</span>
+          <span id="stat-cpm">0 타/분</span>
+          <span id="stat-acc">정확도 100%</span>
+        </div>
+      </div>
+      <div id="prompt-box" class="prompt-box hidden"></div>
+      <div id="target-display" class="target-display"></div>
+      <input id="typing-input" class="typing-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="여기에 입력하세요">
+      <div id="keyboard" class="keyboard"></div>
+    </section>
+
+    <!-- 결과 화면 -->
+    <section id="screen-result" class="screen hidden">
+      <h2>연습 결과</h2>
+      <div class="result-grid">
+        <div class="result-box"><span id="result-cpm">0</span><label>타/분</label></div>
+        <div class="result-box"><span id="result-acc">0%</span><label>정확도</label></div>
+        <div class="result-box"><span id="result-time">00:00</span><label>연습 시간</label></div>
+      </div>
+      <div class="field-row">
+        <label>닉네임</label>
+        <input id="result-nickname" type="text" maxlength="12" placeholder="랭킹에 표시할 이름">
+      </div>
+      <div class="btn-row">
+        <button class="primary-btn" id="btn-save-ranking">랭킹에 저장</button>
+        <button class="secondary-btn" id="btn-retry">다시 연습</button>
+        <button class="secondary-btn" onclick="App.showHome()">홈으로</button>
+      </div>
+    </section>
+
+    <!-- 랭킹 화면 -->
+    <section id="screen-ranking" class="screen hidden">
+      <button class="back-btn" onclick="App.showHome()">← 홈으로</button>
+      <h2>랭킹</h2>
+      <div class="tab-row" id="ranking-tabs"></div>
+      <div id="ranking-list" class="item-list"></div>
+    </section>
+
+  </main>
+</div>
+
+<script src="js/hangul.js"></script>
+<script src="js/data.js"></script>
+<script src="js/study.js"></script>
+<script src="js/keyboard.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
