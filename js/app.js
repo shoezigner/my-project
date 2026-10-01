@@ -411,19 +411,32 @@
 
   function loadItem() {
     var item = session.items[session.index];
-    session.currentTarget = item.target;
-    session.currentPrompt = item.prompt || null;
 
-    el.promptBox.classList.toggle("hidden", !session.currentPrompt);
-    if (session.currentPrompt) el.promptBox.textContent = "Q. " + session.currentPrompt;
+    // 내용이 비어있는 항목은 자동으로 건너뜀 (화면이 멈춘 것처럼 보이는 것 방지)
+    if (!item || !item.target || !item.target.trim()) {
+      session.index++;
+      if (session.index >= session.items.length) { finishSession(); } else { loadItem(); }
+      return;
+    }
 
-    renderTargetDisplay("");
-    el.typingInput.value = "";
-    el.statProgress.textContent = (session.index + 1) + "/" + session.items.length;
-    el.typingInput.focus();
+    try {
+      session.currentTarget = item.target;
+      session.currentPrompt = item.prompt || null;
 
-    var seq = Hangul.keySequenceForChar(session.currentTarget[0]);
-    VirtualKeyboard.highlightKey(seq[0]);
+      el.promptBox.classList.toggle("hidden", !session.currentPrompt);
+      if (session.currentPrompt) el.promptBox.textContent = "Q. " + session.currentPrompt;
+
+      renderTargetDisplay("");
+      el.typingInput.value = "";
+      el.statProgress.textContent = (session.index + 1) + "/" + session.items.length;
+      el.typingInput.focus();
+
+      var seq = Hangul.keySequenceForChar(session.currentTarget[0]);
+      VirtualKeyboard.highlightKey(seq[0]);
+    } catch (err) {
+      console.error("loadItem 오류:", err);
+      showAlertModal("문제를 불러오는 중 오류가 발생했습니다.\n" + err.message);
+    }
   }
 
   function renderTargetDisplay(value) {

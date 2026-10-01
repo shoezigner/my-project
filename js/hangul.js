@@ -65,6 +65,7 @@
 
   // 완성된 한글 글자 1개를 치기 위해 필요한 키 입력 순서를 반환한다.
   function keySequenceForChar(ch) {
+    if (!ch) return [{ key: "" }];
     var comps = getSyllableComponents(ch);
     if (comps) {
       var seq = [keyOf(comps.cho)];
