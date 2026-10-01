@@ -180,7 +180,13 @@ h2 { margin-top: 14px; }
 .target-display .ch.wrong { color: var(--bad); text-decoration: underline; }
 .target-display .ch.current { border-bottom: 2px solid var(--accent); color: var(--text); }
 
+.input-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
 .typing-input {
+  flex: 1;
   width: 100%;
   padding: 14px;
   font-size: 1.2rem;
@@ -188,9 +194,9 @@ h2 { margin-top: 14px; }
   border: 1px solid var(--border);
   background: var(--panel);
   color: var(--text);
-  margin-bottom: 16px;
 }
 .typing-input:focus { outline: none; border-color: var(--accent); }
+#btn-skip { flex-shrink: 0; white-space: nowrap; }
 
 .keyboard { display: flex; flex-direction: column; gap: 6px; align-items: center; }
 .kb-row { display: flex; gap: 6px; }

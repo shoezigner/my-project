@@ -470,6 +470,15 @@
     VirtualKeyboard.highlightKey(seq[0]);
   }
 
+  function skipItem() {
+    session.index++;
+    if (session.index >= session.items.length) {
+      finishSession();
+    } else {
+      loadItem();
+    }
+  }
+
   function finishItem(value) {
     var target = session.currentTarget;
     var correct = 0;
@@ -519,6 +528,9 @@
     });
     el.typingInput.addEventListener("input", function (e) {
       finalizeStep(el.typingInput.value, !!e.isComposing);
+    });
+    $("btn-skip").addEventListener("click", function () {
+      skipItem();
     });
     $("btn-quit").addEventListener("click", function () {
       showConfirmModal("연습을 그만하고 홈으로 갈까요?", "그만하기", function () {
